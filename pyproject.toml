@@ -1,0 +1,20 @@
+[project]
+name = "vfs-appt-bot"
+version = "0.1.0"
+description = "Personal monitor for VFS Global Netherlands appointment availability."
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.27",
+    "twilio>=9.0",
+    "python-dotenv>=1.0",
+    "playwright>=1.59.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
