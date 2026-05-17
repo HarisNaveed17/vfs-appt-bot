@@ -1,0 +1,14 @@
+[Unit]
+Description=VFS Netherlands appointment check (one-shot)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# Hardcoded to this host's checkout. If you move the repo, update both paths
+# here and re-run `systemctl --user daemon-reload`.
+WorkingDirectory=/home/haris/projects/vfs-appt-bot
+ExecStart=/home/haris/projects/vfs-appt-bot/deploy/run.sh
+# A run is login + a two-centre browser sweep; cap it so a hung run can't
+# block the next timer firing.
+TimeoutStartSec=600

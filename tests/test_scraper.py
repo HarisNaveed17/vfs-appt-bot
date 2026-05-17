@@ -19,23 +19,32 @@ def test_parse_earliest_date_only():
 
 
 def test_parse_slot_list():
+    # Verified-real shape: each entry is {date, applicant} — key is `date`
+    # (not slotDate) and there is NO per-slot time field. center/category
+    # fall back to the call args since the entries don't carry them.
     data = {
-        "earliestDate": "2026-06-15",
+        "earliestDate": "06/15/2026 00:00:00",
         "earliestSlotLists": [
-            {"slotDate": "2026-06-15", "slotTime": "10:00", "vacCode": "NISL", "visaCategoryCode": "TR"},
-            {"slotDate": "2026-06-16", "slotTime": "14:30", "vacCode": "NISL", "visaCategoryCode": "TR"},
+            {"date": "06/15/2026 00:00:00", "applicant": "1"},
+            {"date": "06/16/2026 00:00:00", "applicant": "1"},
         ],
     }
     result = _parse(data, vac_code="NISL", visa_category="TR")
     assert len(result) == 2
-    assert result[0] == Slot(date="2026-06-15", time="10:00", center="NISL", category="TR")
-    assert result[1] == Slot(date="2026-06-16", time="14:30", center="NISL", category="TR")
+    assert result[0] == Slot(
+        date="06/15/2026 00:00:00", time=None, center="NISL", category="TR"
+    )
+    assert result[1] == Slot(
+        date="06/16/2026 00:00:00", time=None, center="NISL", category="TR"
+    )
 
 
-def test_parse_slot_list_missing_time():
+def test_parse_slot_has_no_time():
+    # Real entries never carry a per-slot time, so time is always None.
     data = {
-        "earliestDate": "2026-06-15",
-        "earliestSlotLists": [{"slotDate": "2026-06-15"}],
+        "earliestDate": "06/15/2026 00:00:00",
+        "earliestSlotLists": [{"date": "06/15/2026 00:00:00", "applicant": "1"}],
     }
     result = _parse(data, vac_code="NISL", visa_category="TR")
+    assert result[0].date == "06/15/2026 00:00:00"
     assert result[0].time is None

@@ -4,9 +4,11 @@ import smtplib
 from email.message import EmailMessage
 from typing import Iterable
 
-from twilio.rest import Client
+import httpx
 
 from vfs.scraper import Slot
+
+_PUSHOVER_API = "https://api.pushover.net/1/messages.json"
 
 
 def format_message(new_slots: Iterable[Slot]) -> str:
@@ -29,6 +31,25 @@ def send_email(*, gmail_user: str, app_password: str, to: str, body: str) -> Non
         smtp.send_message(msg)
 
 
-def send_whatsapp(*, sid: str, token: str, from_: str, to: str, body: str) -> None:
-    client = Client(sid, token)
-    client.messages.create(from_=from_, to=to, body=body)
+def send_pushover(*, token: str, user: str, body: str) -> None:
+    """Send an Emergency-priority Pushover alert.
+
+    priority=2 re-alerts every `retry` seconds until acknowledged in the
+    Pushover app, giving up after `expire` seconds — i.e. a continuous alarm
+    you can't sleep through, not a one-shot push.
+    """
+    resp = httpx.post(
+        _PUSHOVER_API,
+        data={
+            "token": token,
+            "user": user,
+            "title": "VFS Netherlands: appointment slot opened",
+            "message": body,
+            "priority": 2,
+            "retry": 30,      # re-alert every 30s — Pushover's HARD minimum;
+                              # the API rejects anything < 30 (no alert sent)
+            "expire": 3600,   # keep nagging up to 1h, then stop
+        },
+        timeout=15.0,
+    )
+    resp.raise_for_status()
