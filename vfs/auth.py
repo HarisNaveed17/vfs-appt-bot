@@ -373,7 +373,11 @@ async def _run(
                     "mat-option", has_text=re.compile(r"touris", re.I)
                 ).first
                 await tourist_option.wait_for(state="visible", timeout=20_000)
-                await tourist_option.click(timeout=15_000)
+                # dispatch_event bypasses Playwright's pointer simulation,
+                # avoiding two intermittent failures: (a) cdk-overlay-backdrop
+                # intercepting pointer events, (b) element outside the viewport
+                # when the CDK panel extends below the visible area.
+                await tourist_option.dispatch_event("click")
             except Exception:
                 try:
                     await page.screenshot(
