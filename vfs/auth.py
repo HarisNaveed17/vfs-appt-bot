@@ -364,15 +364,16 @@ async def _run(
                 subcat_select = page.locator("mat-select, select").nth(2)
                 await subcat_select.wait_for(state="visible", timeout=20_000)
                 await subcat_select.click()
-                await page.locator("mat-option").first.wait_for(
-                    state="visible", timeout=15_000
-                )
-                # Label varies per centre/render ("Tourist" vs "Tourism") —
-                # match the shared case-insensitive stem so either resolves.
+                # Wait specifically for the tourist option — not just any
+                # mat-option, which could match a lingering option from the
+                # centre dropdown before the sub-category XHR has finished
+                # populating this panel.
                 log.info("Selecting sub-category (~%s)", subcat_label)
-                await page.locator(
+                tourist_option = page.locator(
                     "mat-option", has_text=re.compile(r"touris", re.I)
-                ).first.click(timeout=15_000)
+                ).first
+                await tourist_option.wait_for(state="visible", timeout=20_000)
+                await tourist_option.click(timeout=15_000)
             except Exception:
                 try:
                     await page.screenshot(
