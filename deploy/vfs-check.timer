@@ -7,7 +7,7 @@ Description=Run the VFS appointment check about every 20 minutes
 # own 0-240s in-process jitter, so polls are well de-synchronised from the
 # clock (anti-detection) and never overlap.
 OnBootSec=3min
-OnUnitActiveSec=20min
+OnUnitActiveSec=15min
 RandomizedDelaySec=180
 Unit=vfs-check.service
 

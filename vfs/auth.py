@@ -17,6 +17,10 @@ from patchright.async_api import async_playwright
 
 log = logging.getLogger("vfs-bot")
 
+
+class AccountRestrictedError(RuntimeError):
+    """VFS reports the account is temporarily restricted (post-login throttle)."""
+
 # Dedicated Chrome profile dir. MUST stay the same dir bootstrap
 # (_bootstrap_session in check.py) captured the session in: cf_clearance is
 # bound to the browser fingerprint, so the profile that replays it has to match
@@ -125,9 +129,10 @@ async def _run(
 
         availability_data: dict | None = None
         login_error: str | None = None
+        account_restricted: bool = False
 
         async def _on_response(response):
-            nonlocal availability_data, login_error
+            nonlocal availability_data, login_error, account_restricted
             if "CheckIsSlotAvailable" in response.url and response.ok:
                 try:
                     availability_data = await response.json()
@@ -137,6 +142,9 @@ async def _run(
                 try:
                     data = await response.json()
                     code = data.get("code") or data.get("errorCode") or response.status
+                    import json as _json
+                    if "restrict" in _json.dumps(data).lower():
+                        account_restricted = True
                     login_error = f"VFS login API returned error {code}"
                 except Exception:
                     pass
@@ -251,6 +259,8 @@ async def _run(
             except Exception:
                 if login_error:
                     await context.close()
+                    if account_restricted:
+                        raise AccountRestrictedError(login_error)
                     raise RuntimeError(login_error)
                 try:
                     await page.screenshot(path="debug_post_login.png", full_page=True)

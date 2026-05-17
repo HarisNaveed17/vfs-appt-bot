@@ -13,6 +13,8 @@ from vfs import config, notifier, scraper, state
 log = logging.getLogger("vfs-bot")
 
 SESSION_PATH = Path("session.json")
+BACKOFF_PATH = Path("backoff_until.json")
+BACKOFF_SECONDS = 9000  # 2.5 hours
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -33,6 +35,9 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     cfg = config.load(dry_run=args.dry_run)
+
+    if _is_backed_off():
+        return 0
 
     if not args.no_jitter:
         delay = random.uniform(0, 240)
@@ -66,6 +71,27 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
+def _is_backed_off() -> bool:
+    if not BACKOFF_PATH.exists():
+        return False
+    try:
+        until = json.loads(BACKOFF_PATH.read_text())["until"]
+        remaining = until - time.time()
+        if remaining > 0:
+            log.info("Account restricted — backoff active, %.0f min remaining. Skipping run.", remaining / 60)
+            return True
+        BACKOFF_PATH.unlink(missing_ok=True)
+    except Exception:
+        pass
+    return False
+
+
+def _set_backoff() -> None:
+    until = time.time() + BACKOFF_SECONDS
+    BACKOFF_PATH.write_text(json.dumps({"until": until}))
+    log.warning("Account restricted detected; backing off for %d min.", BACKOFF_SECONDS // 60)
+
+
 def _fetch(cfg: config.Config) -> list[scraper.Slot] | None:
     # The only path: drive real Chrome via patchright. Hitting the API
     # directly with httpx is Cloudflare-blocked, so a stored token (the old
@@ -88,6 +114,9 @@ def _fetch(cfg: config.Config) -> list[scraper.Slot] | None:
             visa_category=cfg.vfs_visa_category,
             storage_state=storage_state,
         )
+    except auth.AccountRestrictedError:
+        _set_backoff()
+        return None
     except Exception:
         log.exception("Playwright session failed; skipping this run.")
         return None
