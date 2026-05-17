@@ -143,7 +143,11 @@ async def _run(
                     data = await response.json()
                     code = data.get("code") or data.get("errorCode") or response.status
                     import json as _json
-                    if "restrict" in _json.dumps(data).lower():
+                    if (
+                        "restrict" in _json.dumps(data).lower()
+                        or str(code).startswith("429")
+                        or response.status == 429
+                    ):
                         account_restricted = True
                     login_error = f"VFS login API returned error {code}"
                 except Exception:
