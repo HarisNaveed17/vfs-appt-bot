@@ -255,7 +255,13 @@ async def _run(
             await password_input.wait_for(state="visible", timeout=10_000)
             await username_input.fill(email)
             await password_input.fill(password)
-            await page.locator('button:has-text("Sign In")').first.click()
+            # Angular re-evaluates form validity asynchronously after fill();
+            # :not([disabled]) ensures we only match once the button is enabled.
+            sign_in_btn = page.locator(
+                'button:has-text("Sign In"):not([disabled])'
+            ).first
+            await sign_in_btn.wait_for(state="visible", timeout=15_000)
+            await sign_in_btn.click()
             log.info("Submitted login form; waiting for dashboard")
 
             try:
