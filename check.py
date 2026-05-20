@@ -13,8 +13,9 @@ from vfs import config, notifier, scraper, state
 log = logging.getLogger("vfs-bot")
 
 SESSION_PATH = Path("session.json")
+
 BACKOFF_PATH = Path("backoff_until.json")
-BACKOFF_SECONDS = 9000  # 2.5 hours
+BACKOFF_SECONDS = 10800  # 3 hours
 
 
 def main(argv: list[str] | None = None) -> int:
