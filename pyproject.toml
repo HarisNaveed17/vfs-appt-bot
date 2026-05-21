@@ -1,5 +1,5 @@
 [project]
-name = "vfs-appt-bot"
+name = "khidmatgaar"
 version = "0.1.0"
 description = "Personal monitor for VFS Global Netherlands appointment availability."
 requires-python = ">=3.11"

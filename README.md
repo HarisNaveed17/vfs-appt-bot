@@ -1,4 +1,4 @@
-# vfs-appt-bot
+# khidmatgaar
 
 A personal monitor for the VFS Global Netherlands visa appointment page (Pakistan → Netherlands). On each run it drives a real Chrome browser through login → the booking flow → an availability check for each configured centre, then alerts via **email** (audit log) and **Pushover Emergency** (the alarm you can't sleep through) when new slots appear. It does **not** auto-book — notify only.
 
@@ -42,7 +42,7 @@ cp .env.example .env
 
 ### 3. Deploy the systemd timer
 
-The service unit is hardcoded to `/home/haris/projects/vfs-appt-bot`. If you clone elsewhere, edit `deploy/vfs-check.service` to match before linking.
+The service unit is hardcoded to `/home/haris/projects/khidmatgaar`. If you clone elsewhere, edit `deploy/vfs-check.service` to match before linking.
 
 ```bash
 chmod +x deploy/run.sh

@@ -52,7 +52,7 @@ systemctl --user start vfs-check.timer
 ## Notes
 
 - Paths in `vfs-check.service` are hardcoded to
-  `/home/haris/projects/vfs-appt-bot`. Move the repo → edit the unit and
+  `/home/haris/projects/khidmatgaar`. Move the repo → edit the unit and
   `systemctl --user daemon-reload`.
 - `.env` is read from the repo dir (the service sets `WorkingDirectory`). It
   must contain `VFS_*`, `GMAIL_*`, and `PUSHOVER_*` (see `.env.example`).

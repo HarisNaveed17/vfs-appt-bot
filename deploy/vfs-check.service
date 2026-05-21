@@ -7,8 +7,8 @@ Wants=network-online.target
 Type=oneshot
 # Hardcoded to this host's checkout. If you move the repo, update both paths
 # here and re-run `systemctl --user daemon-reload`.
-WorkingDirectory=/home/haris/projects/vfs-appt-bot
-ExecStart=/home/haris/projects/vfs-appt-bot/deploy/run.sh
+WorkingDirectory=/home/haris/projects/khidmatgaar
+ExecStart=/home/haris/projects/khidmatgaar/deploy/run.sh
 # A run is login + a two-centre browser sweep; cap it so a hung run can't
 # block the next timer firing.
 TimeoutStartSec=600
